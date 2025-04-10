@@ -1,5 +1,9 @@
 # Lambda Calculus Visualizer Project
 
+## Research
+Haskell Software: https://github.com/polux/lambda-diagrams?tab=readme-ov-file
+
+
 ## Project Overview
 
 This project aims to create an interactive web application for visualizing lambda calculus operations using Tromp diagrams. The application will serve as both an educational tool and a practical calculator for those working with lambda calculus, providing intuitive visual representations of abstract lambda expressions and their reductions.
@@ -231,12 +235,6 @@ framer-motion
 - D3.js visualization examples
 - Academic papers on lambda calculus visualization
 
-## Getting Started for Developers
-
-1. Clone the repository
-2. Install dependencies: `npm install`
-3. Start the development server: `npm run dev`
-4. Navigate to `http://localhost:3000`
 
 ## Future Extensions
 
@@ -250,3 +248,8 @@ framer-motion
 
 npm install d3 @types/d3 monaco-editor lodash @types/lodash
 npm install --save-dev prettier prettier-plugin-tailwindcss
+
+# Create core directories
+mkdir -p src/components/lambda
+mkdir -p src/lib/lambda
+mkdir -p src/types

@@ -3,6 +3,12 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --lambda-color: #e07a5f;
+  --variable-color: #4ecdc4;
+  --application-color: #ff9f1c;
+  --lambda-hover-color: #d05a3f;
+  --variable-hover-color: #2eada4;
+  --application-hover-color: #ef8f0c;
 }
 
 @theme inline {
@@ -16,6 +22,12 @@
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --lambda-color: #f4845f;
+    --variable-color: #6ecdc4;
+    --application-color: #ffaf3c;
+    --lambda-hover-color: #ff9a7f;
+    --variable-hover-color: #8eede4;
+    --application-hover-color: #ffcf5c;
   }
 }
 
@@ -23,4 +35,80 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Tromp diagram styles */
+.tromp-abstraction {
+  stroke: var(--lambda-color);
+  stroke-width: 3.5;
+  transition: stroke-width 0.2s ease, stroke 0.2s ease;
+}
+
+.tromp-variable {
+  stroke: var(--variable-color);
+  stroke-width: 3.5;
+  transition: stroke-width 0.2s ease, stroke 0.2s ease;
+}
+
+.tromp-application {
+  stroke: var(--application-color);
+  stroke-width: 3.5;
+  transition: stroke-width 0.2s ease, stroke 0.2s ease;
+}
+
+.tromp-node-abstraction {
+  fill: var(--lambda-color);
+  transition: r 0.2s ease, fill 0.2s ease;
+}
+
+.tromp-node-variable {
+  fill: var(--variable-color);
+  transition: r 0.2s ease, fill 0.2s ease;
+}
+
+/* Add hover effects */
+.diagram-node:hover .tromp-node-abstraction {
+  fill: var(--lambda-hover-color);
+  r: 9;
+}
+
+.diagram-node:hover .tromp-node-variable {
+  fill: var(--variable-hover-color);
+  r: 9;
+}
+
+.diagram-text {
+  font-family: var(--font-mono, monospace);
+  transition: font-size 0.2s ease;
+}
+
+.diagram-node:hover .diagram-text {
+  font-size: 16px;
+}
+
+/* Add smooth transitions for diagram interactions */
+.diagram-container svg g {
+  transition: transform 0.3s ease;
+}
+
+.diagram-node:hover circle {
+  r: 8;
+}
+
+.diagram-node text {
+  pointer-events: none;
+}
+
+/* Improve diagram container */
+.diagram-container {
+  background-color: #fafafa;
+  transition: background-color 0.3s ease;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+}
+
+@media (prefers-color-scheme: dark) {
+  .diagram-container {
+    background-color: #1a1a1a;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+  }
 }
