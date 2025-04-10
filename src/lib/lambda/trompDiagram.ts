@@ -107,8 +107,9 @@ export class TrompDiagramGenerator {
     switch (expr.type) {
       case 'variable': {
         const nodeId = `node_${this.nodeCounter++}`;
-        const x = xOffset;
-        const y = depth * this.verticalSpacing;
+        // Flip coordinates - depth becomes x, xOffset becomes y
+        const x = depth * this.horizontalSpacing;
+        const y = xOffset;
         
         // Add variable node
         this.nodes.push({
@@ -121,7 +122,7 @@ export class TrompDiagramGenerator {
           depth
         });
         
-        // If this variable is bound, add a vertical line from the variable to its binder
+        // If this variable is bound, add a horizontal line from the variable to its binder (was vertical)
         const binderId = this.variableBindings.get(expr.name);
         if (binderId) {
           const binderNode = this.nodes.find(n => n.id === binderId);
@@ -129,8 +130,8 @@ export class TrompDiagramGenerator {
             this.links.push({
               id: `link_${this.linkCounter++}`,
               type: 'variable',
-              x1: x,
-              y1: binderNode.y,
+              x1: binderNode.x,
+              y1: y,
               x2: x,
               y2: y
             });
@@ -140,13 +141,14 @@ export class TrompDiagramGenerator {
         // Store variable position for later use
         this.variablePositions.set(nodeId, { x, y });
         
-        return { width: this.horizontalSpacing, lastVarX: x };
+        return { width: this.verticalSpacing, lastVarX: x };
       }
       
       case 'abstraction': {
         const nodeId = `node_${this.nodeCounter++}`;
-        const x = xOffset;
-        const y = depth * this.verticalSpacing;
+        // Flip coordinates - depth becomes x, xOffset becomes y
+        const x = depth * this.horizontalSpacing;
+        const y = xOffset;
         
         // Save the current binding for this parameter (if any)
         const oldBinding = this.variableBindings.get(expr.param);
@@ -154,7 +156,7 @@ export class TrompDiagramGenerator {
         // Set this abstraction as the binder for the parameter
         this.variableBindings.set(expr.param, nodeId);
         
-        // Add abstraction node (horizontal line)
+        // Add abstraction node (vertical line now)
         this.nodes.push({
           id: nodeId,
           type: 'abstraction',
@@ -167,14 +169,14 @@ export class TrompDiagramGenerator {
         // Process the body
         const bodyResult = this.generateNodes(expr.body, depth + 1, xOffset);
         
-        // Add horizontal line for the abstraction
+        // Add vertical line for the abstraction (was horizontal)
         this.links.push({
           id: `link_${this.linkCounter++}`,
           type: 'abstraction',
           x1: x,
           y1: y,
-          x2: x + bodyResult.width,
-          y2: y
+          x2: x,
+          y2: y + bodyResult.width
         });
         
         // Restore the old binding (or remove if there wasn't one)
@@ -191,26 +193,26 @@ export class TrompDiagramGenerator {
         const leftResult = this.generateNodes(expr.left, depth, xOffset);
         const rightResult = this.generateNodes(expr.right, depth, xOffset + leftResult.width);
         
-        // Add application link (horizontal connection between variables)
+        // Add application link (vertical connection between variables now)
         if (this.alternativeStyle) {
           // In alternative style, connect the nearest deepest variables
           this.links.push({
             id: `link_${this.linkCounter++}`,
             type: 'application',
-            x1: leftResult.lastVarX,
-            y1: depth * this.verticalSpacing + this.gridSize * 0.8,
-            x2: xOffset + leftResult.width,
-            y2: depth * this.verticalSpacing + this.gridSize * 0.8
+            x1: depth * this.horizontalSpacing + this.gridSize * 0.8,
+            y1: leftResult.lastVarX,
+            x2: depth * this.horizontalSpacing + this.gridSize * 0.8,
+            y2: xOffset + leftResult.width
           });
         } else {
           // In standard style, connect the leftmost variables
           this.links.push({
             id: `link_${this.linkCounter++}`,
             type: 'application',
-            x1: xOffset,
-            y1: depth * this.verticalSpacing + this.gridSize * 0.8,
-            x2: xOffset + leftResult.width,
-            y2: depth * this.verticalSpacing + this.gridSize * 0.8
+            x1: depth * this.horizontalSpacing + this.gridSize * 0.8,
+            y1: xOffset,
+            x2: depth * this.horizontalSpacing + this.gridSize * 0.8,
+            y2: xOffset + leftResult.width
           });
         }
         
@@ -222,15 +224,20 @@ export class TrompDiagramGenerator {
   private calculateWidth(): number {
     if (this.nodes.length === 0) return 0;
     
-    // Find the rightmost point in the diagram
+    // Find the rightmost point in the diagram (now the deepest point)
     const maxX = Math.max(...this.nodes.map(n => n.x));
-    const maxWidth = Math.max(...this.links.filter(l => l.type === 'abstraction').map(l => l.x2));
     
-    return Math.max(maxX, maxWidth) + this.gridSize * 3;
+    return maxX + this.gridSize * 3;
   }
 
   private calculateHeight(): number {
-    return (this.maxDepth + 1) * this.verticalSpacing + this.gridSize * 3;
+    if (this.nodes.length === 0) return 0;
+    
+    // Find the bottom-most point in the diagram (was rightmost)
+    const maxY = Math.max(...this.nodes.map(n => n.y));
+    const maxHeight = Math.max(...this.links.filter(l => l.type === 'abstraction').map(l => l.y2));
+    
+    return Math.max(maxY, maxHeight) + this.gridSize * 3;
   }
 }
 

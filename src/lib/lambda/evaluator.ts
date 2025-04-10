@@ -40,6 +40,62 @@ export class LambdaEvaluator {
   }
 
   /**
+   * Perform a single beta reduction step using applicative order (call-by-value)
+   * Returns null if no reduction is possible
+   */
+  betaReduceApplicative(expr: LambdaExpr): LambdaExpr | null {
+    if (expr.type === 'application') {
+      // Case 1: Try to reduce the right side (arguments first)
+      const reducedRight = this.betaReduceApplicative(expr.right);
+      if (reducedRight) {
+        return createApplication(expr.left, reducedRight);
+      }
+      
+      // Case 2: Try to reduce the left side
+      const reducedLeft = this.betaReduceApplicative(expr.left);
+      if (reducedLeft) {
+        return createApplication(reducedLeft, expr.right);
+      }
+      
+      // Case 3: If left side is an abstraction and right side is a value, perform the reduction
+      if (expr.left.type === 'abstraction' && this.isValue(expr.right)) {
+        return this.substitute(expr.left.body, expr.left.param, expr.right);
+      }
+    } else if (expr.type === 'abstraction') {
+      // Try to reduce the body of the abstraction
+      const reducedBody = this.betaReduceApplicative(expr.body);
+      if (reducedBody) {
+        return createAbstraction(expr.param, reducedBody);
+      }
+    }
+    
+    // No reduction possible
+    return null;
+  }
+
+  /**
+   * Check if an expression is a value (cannot be reduced further in applicative order)
+   */
+  isValue(expr: LambdaExpr): boolean {
+    // In lambda calculus, abstractions are values
+    if (expr.type === 'abstraction') {
+      return true;
+    }
+    
+    // Variables are also values
+    if (expr.type === 'variable') {
+      return true;
+    }
+    
+    // Applications are not values unless they cannot be reduced further
+    if (expr.type === 'application') {
+      return this.betaReduceApplicative(expr) === null;
+    }
+    
+    return false;
+  }
+
+  /**
    * Substitute all free occurrences of variable with name 'param' in 'expr' with 'replacement'
    */
   substitute(expr: LambdaExpr, param: string, replacement: LambdaExpr): LambdaExpr {
@@ -139,6 +195,28 @@ export class LambdaEvaluator {
     }
     
     return current;
+  }
+
+  /**
+   * Generate a complete reduction sequence from a term to normal form
+   */
+  reduceMany(expr: LambdaExpr, strategy: 'normal' | 'applicative' = 'normal', maxSteps = 100): LambdaExpr[] {
+    const steps: LambdaExpr[] = [expr];
+    let current = expr;
+    let count = 0;
+    
+    while (count < maxSteps) {
+      const next = strategy === 'normal' ? 
+        this.betaReduce(current) : 
+        this.betaReduceApplicative(current);
+      
+      if (!next) break;
+      steps.push(next);
+      current = next;
+      count++;
+    }
+    
+    return steps;
   }
 
   /**

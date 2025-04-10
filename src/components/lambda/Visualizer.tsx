@@ -1,34 +1,32 @@
 "use client";
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { LambdaExpr } from '@/types/lambda';
 import { lambdaParser } from '@/lib/lambda/parser';
 import { lambdaEvaluator } from '@/lib/lambda/evaluator';
-import { trompDiagramGenerator, TrompDiagram } from '@/lib/lambda/trompDiagram';
 import { mathParser } from '@/lib/math/parser';
 import { ExpressionInput } from './ExpressionInput';
-import { DiagramViewer } from './DiagramViewer';
 import { ControlPanel } from './ControlPanel';
 import { InfoPanel } from './InfoPanel';
 import { ExamplesList } from './ExamplesList';
 import { TrompDiagramInfo } from './TrompDiagramInfo';
+import ReductionSequence from './ReductionSequence';
+import TrompDiagram from './TrompDiagram';
 
 export function Visualizer() {
   const [inputExpression, setInputExpression] = useState('');
   const [parsedExpression, setParsedExpression] = useState<LambdaExpr | null>(null);
   const [currentExpression, setCurrentExpression] = useState<LambdaExpr | null>(null);
-  const [diagram, setDiagram] = useState<TrompDiagram | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [steps, setSteps] = useState(0);
   const [canReduce, setCanReduce] = useState(false);
-  const [alternativeStyle, setAlternativeStyle] = useState(false);
+  const [showReductionSequence, setShowReductionSequence] = useState(false);
 
   // Parse the input expression
   const parseExpression = useCallback((input: string) => {
     if (!input.trim()) {
       setParsedExpression(null);
       setCurrentExpression(null);
-      setDiagram(null);
       setError(null);
       setSteps(0);
       setCanReduce(false);
@@ -40,7 +38,6 @@ export function Visualizer() {
       const parsed = mathParser.parse(input);
       setParsedExpression(parsed);
       setCurrentExpression(parsed);
-      setDiagram(trompDiagramGenerator.generateDiagram(parsed, alternativeStyle));
       setError(null);
       setSteps(0);
       setCanReduce(lambdaEvaluator.betaReduce(parsed) !== null);
@@ -50,7 +47,6 @@ export function Visualizer() {
         const parsed = lambdaParser.parse(input);
         setParsedExpression(parsed);
         setCurrentExpression(parsed);
-        setDiagram(trompDiagramGenerator.generateDiagram(parsed, alternativeStyle));
         setError(null);
         setSteps(0);
         setCanReduce(lambdaEvaluator.betaReduce(parsed) !== null);
@@ -59,11 +55,10 @@ export function Visualizer() {
         setError((err as Error).message);
         setParsedExpression(null);
         setCurrentExpression(null);
-        setDiagram(null);
         setCanReduce(false);
       }
     }
-  }, [alternativeStyle]);
+  }, []);
 
   // Handle expression input changes
   const handleExpressionChange = useCallback((expression: string) => {
@@ -84,21 +79,19 @@ export function Visualizer() {
     const reduced = lambdaEvaluator.betaReduce(currentExpression);
     if (reduced) {
       setCurrentExpression(reduced);
-      setDiagram(trompDiagramGenerator.generateDiagram(reduced, alternativeStyle));
       setSteps(steps + 1);
       setCanReduce(lambdaEvaluator.betaReduce(reduced) !== null);
     }
-  }, [currentExpression, steps, alternativeStyle]);
+  }, [currentExpression, steps]);
 
   // Reset to the original expression
   const handleReset = useCallback(() => {
     if (parsedExpression) {
       setCurrentExpression(parsedExpression);
-      setDiagram(trompDiagramGenerator.generateDiagram(parsedExpression, alternativeStyle));
       setSteps(0);
       setCanReduce(lambdaEvaluator.betaReduce(parsedExpression) !== null);
     }
-  }, [parsedExpression, alternativeStyle]);
+  }, [parsedExpression]);
 
   // Reduce to normal form
   const handleNormalForm = useCallback(() => {
@@ -106,7 +99,6 @@ export function Visualizer() {
 
     const normalForm = lambdaEvaluator.reduceToNormalForm(currentExpression);
     setCurrentExpression(normalForm);
-    setDiagram(trompDiagramGenerator.generateDiagram(normalForm, alternativeStyle));
     
     // Count the steps
     let count = 0;
@@ -120,19 +112,16 @@ export function Visualizer() {
     
     setSteps(steps + count);
     setCanReduce(false);
-  }, [currentExpression, steps, alternativeStyle]);
+  }, [currentExpression, steps]);
 
-  // Toggle alternative style
-  const toggleStyle = useCallback(() => {
-    setAlternativeStyle(!alternativeStyle);
-    if (currentExpression) {
-      setDiagram(trompDiagramGenerator.generateDiagram(currentExpression, !alternativeStyle));
-    }
-  }, [alternativeStyle, currentExpression]);
+  // Toggle between single diagram and reduction sequence
+  const toggleReductionSequence = useCallback(() => {
+    setShowReductionSequence(!showReductionSequence);
+  }, [showReductionSequence]);
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">Math to Lambda Calculus Visualizer</h1>
+      <h1 className="text-2xl font-bold mb-6">Lambda Calculus Visualizer</h1>
       
       {error && (
         <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
@@ -147,21 +136,32 @@ export function Visualizer() {
             onExpressionChange={handleExpressionChange} 
           />
           
-          <div className="mt-6 h-[400px]">
+          <div className="mt-6">
             <div className="flex justify-between mb-2">
               <TrompDiagramInfo />
               <button
-                onClick={toggleStyle}
+                onClick={toggleReductionSequence}
                 className="px-3 py-1 text-sm bg-gray-200 hover:bg-gray-300 rounded-md"
               >
-                {alternativeStyle ? "Standard Style" : "Alternative Style"}
+                {showReductionSequence ? "Show Single Diagram" : "Show Reduction Sequence"}
               </button>
             </div>
-            <DiagramViewer 
-              diagram={diagram} 
-              height={400} 
-              alternativeStyle={alternativeStyle} 
-            />
+            
+            {currentExpression && (
+              showReductionSequence ? (
+                <ReductionSequence 
+                  initialExpr={parsedExpression || currentExpression} 
+                  width={800} 
+                  height={400} 
+                />
+              ) : (
+                <TrompDiagram 
+                  expr={currentExpression} 
+                  width={800} 
+                  height={400} 
+                />
+              )
+            )}
           </div>
         </div>
         

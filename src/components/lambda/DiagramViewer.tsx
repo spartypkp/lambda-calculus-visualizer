@@ -94,12 +94,10 @@ export function DiagramViewer({
           onMouseLeave={handleMouseUp}
         >
           <defs>
-            <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0.8" dy="0.8" stdDeviation="1.2" floodOpacity="0.35" />
-            </filter>
+            {/* Removed drop shadow filter for cleaner look */}
           </defs>
           <g transform={`translate(${padding.x}, ${padding.y}) ${transform}`}>
-            {/* Render abstraction lines (horizontal) */}
+            {/* Render abstraction lines (vertical now) */}
             {diagram.links.filter(link => link.type === 'abstraction').map(link => (
               <line
                 key={link.id}
@@ -107,14 +105,14 @@ export function DiagramViewer({
                 y1={link.y1}
                 x2={link.x2}
                 y2={link.y2}
-                className="tromp-abstraction"
+                stroke="currentColor"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth={3}
+                strokeWidth={1.5}
               />
             ))}
             
-            {/* Render variable lines (vertical) */}
+            {/* Render variable lines (horizontal now) */}
             {diagram.links.filter(link => link.type === 'variable').map(link => (
               <line
                 key={link.id}
@@ -122,23 +120,23 @@ export function DiagramViewer({
                 y1={link.y1}
                 x2={link.x2}
                 y2={link.y2}
-                className="tromp-variable"
+                stroke="currentColor"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth={3}
+                strokeWidth={1.5}
               />
             ))}
             
-            {/* Render application links (horizontal connections) */}
+            {/* Render application links (vertical connections now) */}
             {diagram.links.filter(link => link.type === 'application').map(link => (
               <path
                 key={link.id}
-                d={`M ${link.x1} ${link.y1} C ${(link.x1 + link.x2) / 2} ${link.y1 - 15}, ${(link.x1 + link.x2) / 2} ${link.y2 - 15}, ${link.x2} ${link.y2}`}
-                className="tromp-application"
+                d={`M ${link.x1} ${link.y1} C ${link.x1 - 15} ${(link.y1 + link.y2) / 2}, ${link.x2 - 15} ${(link.y1 + link.y2) / 2}, ${link.x2} ${link.y2}`}
+                stroke="currentColor"
                 fill="none"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth={3}
+                strokeWidth={1.5}
               />
             ))}
             
@@ -148,21 +146,9 @@ export function DiagramViewer({
                 <circle
                   cx={node.x}
                   cy={node.y}
-                  r={7}
-                  className="tromp-node-abstraction"
-                  filter="url(#dropShadow)"
-                />
-                <text
-                  x={node.x - 15}
-                  y={node.y - 12}
-                  fontSize="15"
-                  fontWeight="500"
-                  textAnchor="middle"
+                  r={4}
                   fill="currentColor"
-                  className="select-none diagram-text"
-                >
-                  λ{node.param}
-                </text>
+                />
               </g>
             ))}
             
@@ -172,23 +158,9 @@ export function DiagramViewer({
                 <circle
                   cx={node.x}
                   cy={node.y}
-                  r={7}
-                  className="tromp-node-variable"
-                  filter="url(#dropShadow)"
+                  r={4}
+                  fill="currentColor"
                 />
-                {!node.binderId && (
-                  <text
-                    x={node.x}
-                    y={node.y + 22}
-                    fontSize="15"
-                    fontWeight="500"
-                    textAnchor="middle"
-                    fill="currentColor"
-                    className="select-none diagram-text"
-                  >
-                    {node.varName}
-                  </text>
-                )}
               </g>
             ))}
           </g>

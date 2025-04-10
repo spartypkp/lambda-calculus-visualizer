@@ -1,7 +1,11 @@
 # Lambda Calculus Visualizer Project
 
 ## Research
+Main inspiration: https://www.youtube.com/watch?v=RcVA8Nj6HEo
+Tromp diagrams: https://tromp.github.io/cl/diagrams.html
+Lambda Calculus Desmos: https://www.desmos.com/calculator/rviihyo72n
 Haskell Software: https://github.com/polux/lambda-diagrams?tab=readme-ov-file
+
 
 
 ## Project Overview
@@ -151,6 +155,99 @@ The application can be primarily client-side, but may benefit from some backend 
 - **CI/CD**: GitHub Actions
 - **Monitoring**: Vercel Analytics
 - **Database** (if needed): PlanetScale (MySQL) or Supabase (PostgreSQL)
+
+## Project Structure
+
+The project follows a standard Next.js App Router structure with TypeScript. Here's an overview of the main directories and files:
+
+### Directory Structure
+
+```
+lambda-calculus-visualizer/
+├── public/                  # Static assets
+├── src/                     # Source code
+│   ├── app/                 # Next.js App Router pages
+│   │   ├── layout.tsx       # Root layout with font configuration
+│   │   ├── page.tsx         # Main application page
+│   │   └── globals.css      # Global styles including Tromp diagram styling
+│   ├── components/          # React components
+│   │   └── lambda/          # Lambda calculus specific components
+│   │       ├── ControlPanel.tsx       # UI controls for expression evaluation
+│   │       ├── DiagramViewer.tsx      # Renders Tromp diagrams with interactive features
+│   │       ├── ExamplesList.tsx       # Provides predefined example expressions
+│   │       ├── ExpressionInput.tsx    # Input field for lambda expressions
+│   │       ├── InfoPanel.tsx          # Displays information about current expression
+│   │       ├── TrompDiagramInfo.tsx   # Educational information about Tromp diagrams
+│   │       └── Visualizer.tsx         # Main component that orchestrates the application
+│   ├── lib/                 # Utility libraries and core logic
+│   │   ├── lambda/          # Lambda calculus core functionality
+│   │   │   ├── evaluator.ts # Handles beta reduction and expression evaluation
+│   │   │   ├── parser.ts    # Parses lambda calculus syntax into AST
+│   │   │   └── trompDiagram.ts # Generates visual diagrams from expressions
+│   │   └── math/            # Mathematical expression handling
+│   │       └── parser.ts    # Converts math expressions to lambda calculus
+│   └── types/               # TypeScript type definitions
+│       └── lambda.ts        # Types for lambda calculus expressions
+```
+
+### Key Components
+
+1. **Visualizer (`src/components/lambda/Visualizer.tsx`)**
+   - The main orchestrator component that manages the application state
+   - Coordinates between user input, expression parsing, evaluation, and visualization
+   - Handles error states and user interactions
+
+2. **DiagramViewer (`src/components/lambda/DiagramViewer.tsx`)**
+   - Renders the Tromp diagram visualization using SVG
+   - Implements interactive features like zooming, panning, and centering
+   - Handles different node and link types for abstractions, variables, and applications
+
+3. **ControlPanel (`src/components/lambda/ControlPanel.tsx`)**
+   - Provides UI controls for step-by-step beta reduction, resetting, and reducing to normal form
+   - Includes animation speed controls
+
+4. **ExpressionInput (`src/components/lambda/ExpressionInput.tsx`)**
+   - Text input field for entering lambda calculus or mathematical expressions
+   - Provides feedback and examples for users
+
+### Core Libraries
+
+1. **Lambda Parser (`src/lib/lambda/parser.ts`)**
+   - Implements a recursive descent parser for lambda calculus syntax
+   - Handles both λ and \ notations for lambda
+   - Builds an abstract syntax tree (AST) from the input string
+
+2. **Lambda Evaluator (`src/lib/lambda/evaluator.ts`)**
+   - Performs beta reduction on lambda expressions
+   - Handles variable substitution with proper alpha conversion to avoid capture
+   - Supports reduction to normal form
+
+3. **Tromp Diagram Generator (`src/lib/lambda/trompDiagram.ts`)**
+   - Converts lambda expressions into visual Tromp diagrams
+   - Uses a grid-based layout system for positioning nodes
+   - Supports both standard and alternative visualization styles
+
+4. **Math Parser (`src/lib/math/parser.ts`)**
+   - Converts mathematical expressions to lambda calculus using Church encodings
+   - Implements operations like addition, subtraction, multiplication, and division
+   - Provides a more accessible entry point for users unfamiliar with lambda syntax
+
+### Data Flow
+
+1. User enters an expression in the `ExpressionInput` component
+2. The `Visualizer` component attempts to parse it first as a math expression, then as a lambda expression
+3. If parsing succeeds, the expression is converted to a Tromp diagram using the `trompDiagramGenerator`
+4. The diagram is rendered by the `DiagramViewer` component
+5. When the user clicks reduction controls in the `ControlPanel`:
+   - The `lambdaEvaluator` performs the requested operations
+   - The `Visualizer` updates the state with the new expression
+   - A new diagram is generated and displayed
+
+This architecture separates concerns effectively:
+- UI components handle user interaction and rendering
+- Core logic libraries handle the mathematical and computational aspects
+- State management is centralized in the `Visualizer` component
+- Type definitions ensure consistency across the application
 
 ## Implementation Phases
 
