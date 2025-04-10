@@ -57,58 +57,52 @@ export default function AnimationController({
 	};
 
 	return (
-		<div className="bg-white p-4 rounded-lg shadow-md w-full max-w-md">
-			<div className="flex justify-between items-center mb-4">
-				<div className="text-sm font-medium text-gray-700">
-					Step {currentStep + 1} of {totalSteps}
+		<div className="bg-white p-3 rounded shadow-sm w-full text-sm">
+			<div className="flex items-center mb-2">
+				<div className="text-xs font-medium text-gray-700 mr-3">
+					Step {currentStep + 1}/{totalSteps}
 				</div>
 
-				<div className="flex space-x-2">
-					<button
-						onClick={() => onSpeedChange(Math.max(1, speed - 1))}
-						disabled={speed <= 1}
-						className="p-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
-					>
-						Slower
-					</button>
-
-					<div className="py-2 px-3 bg-gray-100 rounded">
-						{speed}x
-					</div>
-
-					<button
-						onClick={() => onSpeedChange(Math.min(5, speed + 1))}
-						disabled={speed >= 5}
-						className="p-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
-					>
-						Faster
-					</button>
-				</div>
-			</div>
-
-			<div className="mb-4">
 				<input
 					type="range"
 					min="0"
 					max={totalSteps - 1}
 					value={currentStep}
 					onChange={handleSliderChange}
-					className="w-full"
+					className="flex-grow h-1"
 				/>
+
+				<div className="flex items-center ml-3 space-x-1">
+					<button
+						onClick={() => onSpeedChange(Math.max(1, speed - 1))}
+						disabled={speed <= 1}
+						className="px-1.5 py-0.5 bg-gray-200 rounded text-xs hover:bg-gray-300 disabled:opacity-50"
+					>
+						-
+					</button>
+					<span className="text-xs bg-gray-100 px-1.5 py-0.5 rounded">{speed}x</span>
+					<button
+						onClick={() => onSpeedChange(Math.min(5, speed + 1))}
+						disabled={speed >= 5}
+						className="px-1.5 py-0.5 bg-gray-200 rounded text-xs hover:bg-gray-300 disabled:opacity-50"
+					>
+						+
+					</button>
+				</div>
 			</div>
 
 			<div className="flex justify-between">
 				<button
 					onClick={handleStepBackward}
 					disabled={currentStep <= 0}
-					className="p-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+					className="p-1.5 bg-gray-200 rounded text-xs hover:bg-gray-300 disabled:opacity-50"
 				>
-					← Previous
+					← Prev
 				</button>
 
 				<button
 					onClick={onPlayPauseToggle}
-					className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+					className="p-1.5 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 min-w-[60px]"
 				>
 					{isPlaying ? "Pause" : "Play"}
 				</button>
@@ -116,7 +110,7 @@ export default function AnimationController({
 				<button
 					onClick={handleStepForward}
 					disabled={currentStep >= totalSteps - 1}
-					className="p-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+					className="p-1.5 bg-gray-200 rounded text-xs hover:bg-gray-300 disabled:opacity-50"
 				>
 					Next →
 				</button>

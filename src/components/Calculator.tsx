@@ -34,38 +34,38 @@ export default function Calculator({ onEvaluate }: CalculatorProps) {
 	};
 
 	return (
-		<div className="bg-white p-4 rounded-lg shadow-md w-full max-w-md">
-			<div className="mb-4">
+		<div className="w-full max-w-sm">
+			<div className="mb-2">
 				<input
 					type="text"
 					value={display}
 					onChange={(e) => setDisplay(e.target.value)}
-					className="w-full p-2 text-right text-xl bg-gray-100 rounded"
+					className="w-full p-1 text-right text-lg bg-gray-100 rounded"
 					placeholder="0"
 				/>
 			</div>
 
-			<div className="grid grid-cols-4 gap-2">
+			<div className="grid grid-cols-4 gap-1">
 				<button
-					className="p-3 bg-gray-200 rounded hover:bg-gray-300"
+					className="p-2 bg-gray-200 rounded hover:bg-gray-300 text-sm"
 					onClick={() => handleClear()}
 				>
 					C
 				</button>
 				<button
-					className="p-3 bg-gray-200 rounded hover:bg-gray-300"
+					className="p-2 bg-gray-200 rounded hover:bg-gray-300 text-sm"
 					onClick={() => handleDelete()}
 				>
 					←
 				</button>
 				<button
-					className="p-3 bg-gray-200 rounded hover:bg-gray-300"
+					className="p-2 bg-gray-200 rounded hover:bg-gray-300 text-sm"
 					onClick={() => handleOperatorClick("(")}
 				>
 					(
 				</button>
 				<button
-					className="p-3 bg-gray-200 rounded hover:bg-gray-300"
+					className="p-2 bg-gray-200 rounded hover:bg-gray-300 text-sm"
 					onClick={() => handleOperatorClick(")")}
 				>
 					)
@@ -74,14 +74,14 @@ export default function Calculator({ onEvaluate }: CalculatorProps) {
 				{[7, 8, 9].map((num) => (
 					<button
 						key={num}
-						className="p-3 bg-gray-100 rounded hover:bg-gray-200"
+						className="p-2 bg-gray-100 rounded hover:bg-gray-200 text-sm"
 						onClick={() => handleNumberClick(num)}
 					>
 						{num}
 					</button>
 				))}
 				<button
-					className="p-3 bg-blue-500 text-white rounded hover:bg-blue-600"
+					className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
 					onClick={() => handleOperatorClick("/")}
 				>
 					÷
@@ -90,14 +90,14 @@ export default function Calculator({ onEvaluate }: CalculatorProps) {
 				{[4, 5, 6].map((num) => (
 					<button
 						key={num}
-						className="p-3 bg-gray-100 rounded hover:bg-gray-200"
+						className="p-2 bg-gray-100 rounded hover:bg-gray-200 text-sm"
 						onClick={() => handleNumberClick(num)}
 					>
 						{num}
 					</button>
 				))}
 				<button
-					className="p-3 bg-blue-500 text-white rounded hover:bg-blue-600"
+					className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
 					onClick={() => handleOperatorClick("*")}
 				>
 					×
@@ -106,39 +106,39 @@ export default function Calculator({ onEvaluate }: CalculatorProps) {
 				{[1, 2, 3].map((num) => (
 					<button
 						key={num}
-						className="p-3 bg-gray-100 rounded hover:bg-gray-200"
+						className="p-2 bg-gray-100 rounded hover:bg-gray-200 text-sm"
 						onClick={() => handleNumberClick(num)}
 					>
 						{num}
 					</button>
 				))}
 				<button
-					className="p-3 bg-blue-500 text-white rounded hover:bg-blue-600"
+					className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
 					onClick={() => handleOperatorClick("-")}
 				>
 					−
 				</button>
 
 				<button
-					className="p-3 bg-gray-100 rounded hover:bg-gray-200"
+					className="p-2 bg-gray-100 rounded hover:bg-gray-200 text-sm"
 					onClick={() => handleNumberClick(0)}
 				>
 					0
 				</button>
 				<button
-					className="p-3 bg-gray-100 rounded hover:bg-gray-200"
+					className="p-2 bg-gray-100 rounded hover:bg-gray-200 text-sm"
 					onClick={() => handleOperatorClick(".")}
 				>
 					.
 				</button>
 				<button
-					className="p-3 bg-green-500 text-white rounded hover:bg-green-600"
+					className="p-2 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
 					onClick={() => handleEvaluate()}
 				>
 					=
 				</button>
 				<button
-					className="p-3 bg-blue-500 text-white rounded hover:bg-blue-600"
+					className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
 					onClick={() => handleOperatorClick("+")}
 				>
 					+
@@ -146,13 +146,13 @@ export default function Calculator({ onEvaluate }: CalculatorProps) {
 			</div>
 
 			{history.length > 0 && (
-				<div className="mt-4 border-t pt-2">
-					<h3 className="text-sm font-medium text-gray-700">History</h3>
-					<ul className="mt-1 text-sm text-gray-600">
-						{history.slice(-5).map((expr, index) => (
+				<div className="mt-2 border-t pt-1">
+					<h3 className="text-xs font-medium text-gray-700">History</h3>
+					<ul className="mt-1 text-xs text-gray-600 max-h-16 overflow-y-auto">
+						{history.slice(-3).map((expr, index) => (
 							<li
 								key={index}
-								className="cursor-pointer hover:bg-gray-100 p-1"
+								className="cursor-pointer hover:bg-gray-100 py-0.5 px-1"
 								onClick={() => setDisplay(expr)}
 							>
 								{expr}

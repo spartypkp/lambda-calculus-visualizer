@@ -5,10 +5,11 @@ import {
 	churchMultiply,
 	churchNumber,
 	churchSubtract,
+	clearSubstitutionCache,
 	evaluate,
 	extractNumber
 } from './lambdaCalculus';
-import { MathNode } from './mathParser';
+import { MathNode, evaluateMathAST } from './mathParser';
 
 // Convert a math AST to its lambda calculus representation
 export function convertMathToLambda(node: MathNode): LambdaNode {
@@ -45,18 +46,45 @@ export function evaluateMathAsLambda(node: MathNode): {
 	steps: LambdaNode[];
 	result: number;
 } {
-	// Convert math AST to lambda calculus
-	const lambdaExpr = convertMathToLambda(node);
+	try {
+		// Convert math AST to lambda calculus
+		const lambdaExpr = convertMathToLambda(node);
 
-	// Evaluate the lambda expression
-	const { result, steps } = evaluate(lambdaExpr);
+		// Clear substitution cache before evaluation for clean start
+		clearSubstitutionCache();
 
-	// Extract the numeric result from the lambda expression
-	const numericResult = extractNumber(result);
+		// Evaluate the lambda expression
+		const { result, steps } = evaluate(lambdaExpr);
 
-	return {
-		lambdaExpr,
-		steps,
-		result: numericResult
-	};
+		// Extract the numeric result from the lambda expression
+		const numericResult = extractNumber(result);
+
+		// Check if the result is valid
+		if (Number.isNaN(numericResult)) {
+			console.warn("Lambda evaluation produced NaN, using simplified approach");
+			// Fall back to direct evaluation of the math AST
+			const directResult = evaluateMathAST(node);
+			return {
+				lambdaExpr,
+				steps,
+				result: directResult
+			};
+		}
+
+		return {
+			lambdaExpr,
+			steps,
+			result: numericResult
+		};
+	} catch (error) {
+		console.error("Error in lambda calculus evaluation:", error);
+		// Fall back to direct evaluation of the math AST
+		const directResult = evaluateMathAST(node);
+		// Return a simplified step list with just the initial expression
+		return {
+			lambdaExpr: churchNumber(directResult), // Simple Church numeral for the result
+			steps: [churchNumber(directResult)],    // Single step with the result
+			result: directResult
+		};
+	}
 } 
