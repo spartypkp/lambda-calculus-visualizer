@@ -2,271 +2,465 @@ import { LambdaExpr } from '@/types/lambda';
 import { DeBruijnTerm, toDeBruijn } from './deBruijn';
 
 /**
- * Node in a grid-based Tromp diagram
+ * Visual elements of a Tromp diagram
  */
-export interface GridNode {
-  id: string;
-  type: 'abstraction' | 'variable' | 'application';
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  binderIndex?: number;  // For variable nodes
-  varName?: string;      // For variable nodes
+export interface TrompDiagram {
+	width: number;
+	height: number;
+	lambdas: TrompLambda[];
+	variables: TrompVariable[];
+	applications: TrompApplication[];
 }
 
 /**
- * Link in a grid-based Tromp diagram
+ * Lambda abstraction in a Tromp diagram (horizontal line)
  */
-export interface GridLink {
-  id: string;
-  type: 'abstraction' | 'variable' | 'application';
-  points: { x: number, y: number }[];
+export interface TrompLambda {
+	id: string;
+	x: number;
+	y: number;
+	width: number;
+	index: number; // De Bruijn level
+	paramName?: string;
 }
 
 /**
- * Complete grid-based Tromp diagram
+ * Variable in a Tromp diagram (vertical line from lambda)
  */
-export interface TrompGrid {
-  nodes: GridNode[];
-  links: GridLink[];
-  width: number;
-  height: number;
+export interface TrompVariable {
+	id: string;
+	x: number;    // x-coordinate of the variable
+	y: number;    // Top y-coordinate where it connects to the lambda
+	height: number; // Height of the vertical line
+	lambdaId: string; // ID of the binding lambda
+	index: number;  // De Bruijn index
+	name?: string;  // Variable name (if showing names)
+	appLevel?: number; // Application level where this variable is used
 }
 
 /**
- * Options for customizing the Tromp diagram visualization
+ * Application in a Tromp diagram (horizontal connection between variables)
+ */
+export interface TrompApplication {
+	id: string;
+	x1: number;  // Start x-coordinate
+	x2: number;  // End x-coordinate
+	y: number;   // y-coordinate of the horizontal line
+	leftVarId: string;  // Left variable ID
+	rightVarId: string; // Right variable ID
+	level: number;      // Application nesting level
+}
+
+/**
+ * Options for the Tromp diagram
  */
 export interface TrompDiagramOptions {
-  style: 'classic' | 'minimal' | 'colored';
-  showVariableNames: boolean;
-  showNodeLabels: boolean;
+	showVariableNames: boolean;
+	gridSize: number;
+	padding: number;
+	useColors?: boolean;  // Whether to use colors for different parts
 }
 
 /**
- * Generator for grid-based Tromp diagrams from lambda expressions
+ * Context for term analysis
  */
-export class GridTrompGenerator {
-  private nodeCounter = 0;
-  private linkCounter = 0;
-  private gridSize = 35;  // Adjusted base unit for the grid for better spacing
-  
-  /**
-   * Generate a grid-based Tromp diagram from a lambda expression
-   */
-  generateGrid(
-    expr: LambdaExpr, 
-    options: TrompDiagramOptions = {
-      style: 'classic',
-      showVariableNames: true,
-      showNodeLabels: true
-    }
-  ): TrompGrid {
-    this.nodeCounter = 0;
-    this.linkCounter = 0;
-    
-    // Convert to de Bruijn representation for easier visualization
-    const deBruijnTerm = toDeBruijn(expr);
-    
-    const nodes: GridNode[] = [];
-    const links: GridLink[] = [];
-    
-    // Calculate term dimensions first
-    const { width, height } = this.calculateDimensions(deBruijnTerm);
-    
-    // Generate the visual elements
-    this.generateVisual(deBruijnTerm, 0, 0, [], nodes, links, expr, options);
-    
-    return {
-      nodes,
-      links,
-      // Swap width and height in the final dimensions
-      height: width * this.gridSize + this.gridSize * 4,
-      width: height * this.gridSize + this.gridSize * 4
-    };
-  }
-  
-  /**
-   * Calculate the dimensions of a term in grid units
-   */
-  private calculateDimensions(term: DeBruijnTerm): { width: number, height: number } {
-    switch (term.type) {
-      case 'var':
-        return { width: 0, height: 1 }; // Flipped width and height
-        
-      case 'lam': {
-        if (!term.body) throw new Error('Lambda term missing body');
-        const bodyDims = this.calculateDimensions(term.body);
-        return { width: bodyDims.width + 1, height: bodyDims.height }; // Flipped width and height
-      }
-        
-      case 'app': {
-        if (!term.left || !term.right) throw new Error('Application missing terms');
-        const leftDims = this.calculateDimensions(term.left);
-        const rightDims = this.calculateDimensions(term.right);
-        return {
-          width: Math.max(leftDims.width, rightDims.width) + 1, // Flipped width and height
-          height: leftDims.height + rightDims.height
-        };
-      }
-    }
-  }
-  
-  /**
-   * Generate the visual elements of the diagram
-   */
-  private generateVisual(
-    term: DeBruijnTerm, 
-    x: number, 
-    y: number, 
-    binders: number[], 
-    nodes: GridNode[], 
-    links: GridLink[],
-    originalExpr: LambdaExpr,
-    options: TrompDiagramOptions
-  ): { width: number, lastNodeId: string } {
-    switch (term.type) {
-      case 'var': {
-        if (term.index === undefined) throw new Error('Variable missing index');
-        
-        const nodeId = `node_${this.nodeCounter++}`;
-        // Flip coordinates - y becomes x, x becomes y
-        const varX = y * this.gridSize;
-        const varY = x * this.gridSize;
-        
-        // Find the original variable name if possible
-        let varName: string | undefined;
-        if (options.showVariableNames) {
-          // This is a simplification - in a real implementation we would need to
-          // track the mapping between de Bruijn indices and original variable names
-          varName = term.index < binders.length ? `x${term.index}` : 'free';
-        }
-        
-        // Add variable node
-        nodes.push({
-          id: nodeId,
-          type: 'variable',
-          x: varX,
-          y: varY,
-          width: this.gridSize,
-          height: this.gridSize,
-          binderIndex: term.index < binders.length ? binders[term.index] : undefined,
-          varName: options.showVariableNames ? varName : undefined
-        });
-        
-        // If this variable has a binder, add a link to it
-        if (term.index < binders.length) {
-          const binderId = binders[term.index];
-          links.push({
-            id: `link_${this.linkCounter++}`,
-            type: 'variable',
-            points: [
-              { x: varX, y: varY + this.gridSize / 2 }, // Start at the variable node
-              { x: binderId * this.gridSize, y: varY + this.gridSize / 2 } // Connect to the binder horizontally
-            ]
-          });
-        }
-        
-        return { width: 1, lastNodeId: nodeId };
-      }
-        
-      case 'lam': {
-        if (!term.body) throw new Error('Lambda term missing body');
-        
-        const nodeId = `node_${this.nodeCounter++}`;
-        // Flip coordinates - y becomes x, x becomes y
-        const lamX = y * this.gridSize;
-        const lamY = x * this.gridSize;
-        
-        // Add this binder to the context
-        const newBinders = [y, ...binders];
-        
-        // Add abstraction node
-        nodes.push({
-          id: nodeId,
-          type: 'abstraction',
-          x: lamX,
-          y: lamY,
-          width: this.gridSize,
-          height: this.gridSize
-        });
-        
-        // Process the body
-        const { width: bodyWidth } = this.generateVisual(
-          term.body, 
-          x, 
-          y + 1, 
-          newBinders, 
-          nodes, 
-          links,
-          originalExpr,
-          options
-        );
-        
-        // Add vertical line for the abstraction (was horizontal)
-        // The line should start at the abstraction node and extend downward to cover the body height
-        links.push({
-          id: `link_${this.linkCounter++}`,
-          type: 'abstraction',
-          points: [
-            { x: lamX, y: lamY }, // Start at the abstraction node
-            { x: lamX, y: lamY + bodyWidth * this.gridSize } // Extend downward to cover the body height
-          ]
-        });
-        
-        return { width: bodyWidth, lastNodeId: nodeId };
-      }
-        
-      case 'app': {
-        if (!term.left || !term.right) throw new Error('Application missing terms');
-        
-        // Flip coordinates - y becomes x, x becomes y
-        const appX = y * this.gridSize;
-        const appY = x * this.gridSize;
-        
-        // Calculate dimensions for left and right terms to determine their widths
-        const leftDims = this.calculateDimensions(term.left);
-        const rightDims = this.calculateDimensions(term.right);
-        
-        // Process right term first (reversed order)
-        const { width: rightWidth, lastNodeId: rightId } = this.generateVisual(
-          term.right, 
-          x + leftDims.width, // Position based on left term's width
-          y + 1, 
-          binders, 
-          nodes, 
-          links,
-          originalExpr,
-          options
-        );
-        
-        // Process left term second, but position it on the left
-        const { width: leftWidth, lastNodeId: leftId } = this.generateVisual(
-          term.left, 
-          x, 
-          y + 1, 
-          binders, 
-          nodes, 
-          links,
-          originalExpr,
-          options
-        );
-        
-        // Add application link (connect the terms) - vertical connection
-        links.push({
-          id: `link_${this.linkCounter++}`,
-          type: 'application',
-          points: [
-            { x: appX + this.gridSize / 2, y: appY + this.gridSize / 2 },
-            { x: appX + this.gridSize / 2, y: appY + leftWidth * this.gridSize + this.gridSize / 2 }
-          ]
-        });
-        
-        return { width: leftWidth + rightWidth, lastNodeId: leftId };
-      }
-    }
-  }
+interface TermContext {
+	depth: number;      // Current lambda nesting depth
+	varMap: Map<number, string>; // Map from de Bruijn indices to var names
+	lambdaIds: string[]; // IDs of lambdas in scope
+	lambdaY: number[];  // Y-coordinates of lambdas in scope
+	gridSize: number;   // Size of grid units
+	padding: number;    // Padding around diagram
+	nextId: number;     // Counter for generating IDs
+	appLevel: number;   // Current application nesting level
 }
 
-// Export a singleton instance for convenience
-export const gridTrompGenerator = new GridTrompGenerator();
+/**
+ * Result of analyzing a term
+ */
+interface TermResult {
+	width: number;      // Width used by the term
+	variableIds: string[]; // IDs of variables in this term
+	variableX: number[];  // X-coordinates of variables
+	level: number;      // Nesting level of the term
+	yOffset: number;    // Y-offset for this term
+}
+
+/**
+ * Tromp diagram generator
+ */
+export class TrompDiagramGenerator {
+	/**
+	 * Generate a Tromp diagram from a lambda expression
+	 */
+	generateDiagram(
+		expr: LambdaExpr,
+		options: TrompDiagramOptions = {
+			showVariableNames: true,
+			gridSize: 30,
+			padding: 30,
+			useColors: false
+		}
+	): TrompDiagram {
+		// Convert to de Bruijn indices
+		const deBruijnTerm = toDeBruijn(expr);
+
+		// Create storage for diagram elements
+		const lambdas: TrompLambda[] = [];
+		const variables: TrompVariable[] = [];
+		const applications: TrompApplication[] = [];
+
+		// Initialize context
+		const context: TermContext = {
+			depth: 0,
+			varMap: new Map(),
+			lambdaIds: [],
+			lambdaY: [],
+			gridSize: options.gridSize,
+			padding: options.padding,
+			nextId: 0,
+			appLevel: 0
+		};
+
+		// Set up variable names if showing them
+		if (options.showVariableNames && expr.type === 'abstraction') {
+			this.setupVariableNames(expr, context.varMap);
+		}
+
+		// Analyze the term and generate the diagram
+		const result = this.analyzeTerm(
+			deBruijnTerm,
+			0,
+			0,
+			context,
+			lambdas,
+			variables,
+			applications,
+			options
+		);
+
+		// Calculate overall dimensions
+		const width = result.width * options.gridSize + options.padding * 2;
+
+		// Find the maximum y-coordinate across all elements
+		const maxLambdaY = Math.max(...lambdas.map(l => l.y));
+		const maxAppY = applications.length > 0
+			? Math.max(...applications.map(a => a.y))
+			: 0;
+		const maxVarBottom = variables.length > 0
+			? Math.max(...variables.map(v => v.y + v.height))
+			: 0;
+
+		const height = Math.max(
+			maxLambdaY + options.gridSize,
+			maxAppY + options.gridSize,
+			maxVarBottom + options.padding
+		);
+
+		// Apply final adjustments to vertical lines for variables used in applications
+		this.extendVariablesToApplications(variables, applications);
+
+		return {
+			width,
+			height,
+			lambdas,
+			variables,
+			applications
+		};
+	}
+
+	/**
+	 * Extend variable lines to ensure they reach their application connections
+	 */
+	private extendVariablesToApplications(
+		variables: TrompVariable[],
+		applications: TrompApplication[]
+	): void {
+		// For each application, ensure connected variables extend to that level
+		for (const app of applications) {
+			const leftVar = variables.find(v => v.id === app.leftVarId);
+			const rightVar = variables.find(v => v.id === app.rightVarId);
+
+			if (leftVar) {
+				const requiredHeight = app.y - leftVar.y;
+				if (requiredHeight > leftVar.height) {
+					leftVar.height = requiredHeight;
+				}
+			}
+
+			if (rightVar) {
+				const requiredHeight = app.y - rightVar.y;
+				if (requiredHeight > rightVar.height) {
+					rightVar.height = requiredHeight;
+				}
+			}
+		}
+	}
+
+	/**
+	 * Set up variable names from the original expression
+	 */
+	private setupVariableNames(expr: LambdaExpr, varMap: Map<number, string>, depth: number = 0): void {
+		if (expr.type === 'abstraction') {
+			varMap.set(depth, expr.param);
+			this.setupVariableNames(expr.body, varMap, depth + 1);
+		} else if (expr.type === 'application') {
+			this.setupVariableNames(expr.left, varMap, depth);
+			this.setupVariableNames(expr.right, varMap, depth);
+		}
+	}
+
+	/**
+	 * Analyze a term and generate diagram elements
+	 */
+	private analyzeTerm(
+		term: DeBruijnTerm,
+		x: number,
+		y: number,
+		context: TermContext,
+		lambdas: TrompLambda[],
+		variables: TrompVariable[],
+		applications: TrompApplication[],
+		options: TrompDiagramOptions
+	): TermResult {
+		// Increment the available ID
+		const nextId = () => `id_${context.nextId++}`;
+
+		switch (term.type) {
+			case 'var': {
+				if (term.index === undefined) {
+					throw new Error('Variable missing index');
+				}
+
+				// Create variable element
+				const varId = nextId();
+				const lambdaIndex = term.index;
+
+				// Check if this is a bound variable
+				if (lambdaIndex >= 0 && lambdaIndex < context.lambdaIds.length) {
+					const lambdaId = context.lambdaIds[lambdaIndex];
+					const bindingY = context.lambdaY[lambdaIndex];
+					const varX = x * context.gridSize + context.padding;
+					const varY = bindingY;
+
+					// Calculate height based on application level for better Church numeral visualization
+					// Make deeper applications have proportionally longer lines
+					const heightMultiplier = context.appLevel > 0 ? (context.appLevel * 0.5) + 1 : 1;
+					const initialHeight = Math.max(
+						y * context.gridSize - bindingY + context.padding,
+						context.gridSize * heightMultiplier // Ensure variables in applications have taller lines
+					);
+
+					// Add application level to track where this variable is used
+					variables.push({
+						id: varId,
+						x: varX,
+						y: varY,
+						height: initialHeight,
+						lambdaId,
+						index: lambdaIndex,
+						name: options.showVariableNames ? context.varMap.get(lambdaIndex) : undefined,
+						appLevel: context.appLevel
+					});
+				} else {
+					// Free variable - connect to top of diagram
+					const varX = x * context.gridSize + context.padding;
+					variables.push({
+						id: varId,
+						x: varX,
+						y: context.padding,
+						height: y * context.gridSize + context.padding,
+						lambdaId: 'free',
+						index: lambdaIndex,
+						name: options.showVariableNames ? `free_${lambdaIndex}` : undefined,
+						appLevel: context.appLevel
+					});
+				}
+
+				return {
+					width: 1,
+					variableIds: [varId],
+					variableX: [x],
+					level: context.appLevel,
+					yOffset: 0
+				};
+			}
+
+			case 'lam': {
+				if (!term.body) {
+					throw new Error('Lambda term missing body');
+				}
+
+				// Increase depth for lambda
+				context.depth = Math.max(context.depth, y + 1);
+
+				// Create lambda abstraction element
+				const lambdaId = nextId();
+				const lambdaY = y * context.gridSize + context.padding;
+
+				// Add lambda to context
+				context.lambdaIds.unshift(lambdaId);
+				context.lambdaY.unshift(lambdaY);
+
+				// Process the body with updated context
+				const bodyResult = this.analyzeTerm(
+					term.body,
+					x,
+					y + 1,
+					context,
+					lambdas,
+					variables,
+					applications,
+					options
+				);
+
+				// Remove lambda from context after processing body
+				context.lambdaIds.shift();
+				context.lambdaY.shift();
+
+				// Create lambda element
+				lambdas.push({
+					id: lambdaId,
+					x: context.padding,
+					y: lambdaY,
+					width: bodyResult.width * context.gridSize,
+					index: y,
+					paramName: options.showVariableNames ? context.varMap.get(y) : undefined
+				});
+
+				return {
+					...bodyResult,
+					level: 0, // Reset level at lambda abstraction
+					yOffset: 0
+				};
+			}
+
+			case 'app': {
+				if (!term.left || !term.right) {
+					throw new Error('Application missing left or right term');
+				}
+
+				// Increment application level for nested applications
+				context.appLevel += 1;
+				const currentAppLevel = context.appLevel;
+
+				// Improve vertical staggering for Church numerals
+				// Use a larger stagger amount for better visualization of nested applications
+				const staggerAmount = Math.min(currentAppLevel * 0.5 + 0.5, 2.0); // Cap the stagger multiplier
+				const staggerY = staggerAmount * options.gridSize;
+
+				// Process the left term
+				const leftResult = this.analyzeTerm(
+					term.left,
+					x,
+					y,
+					context,
+					lambdas,
+					variables,
+					applications,
+					options
+				);
+
+				// Process the right term to the right of the left term with improved staggering
+				// For Church numerals, use progressive X and Y offsets
+				const rightY = y + staggerAmount;
+				const rightResult = this.analyzeTerm(
+					term.right,
+					x + leftResult.width,
+					rightY,
+					context,
+					lambdas,
+					variables,
+					applications,
+					options
+				);
+
+				// Create application connections with enhanced positioning
+				this.createApplicationConnections(
+					leftResult,
+					rightResult,
+					y,
+					currentAppLevel,
+					staggerY,
+					context,
+					variables,
+					applications
+				);
+
+				// Decrement application level after processing both sides
+				context.appLevel -= 1;
+
+				// Return combined results
+				return {
+					width: leftResult.width + rightResult.width,
+					variableIds: [...leftResult.variableIds, ...rightResult.variableIds],
+					variableX: [...leftResult.variableX, ...rightResult.variableX.map(x => x)],
+					level: context.appLevel,
+					yOffset: staggerY
+				};
+			}
+
+			default:
+				throw new Error(`Unknown term type: ${(term as any).type}`);
+		}
+	}
+
+	/**
+	 * Create application connections between variables
+	 */
+	private createApplicationConnections(
+		leftResult: TermResult,
+		rightResult: TermResult,
+		y: number,
+		level: number,
+		staggerY: number,
+		context: TermContext,
+		variables: TrompVariable[],
+		applications: TrompApplication[]
+	): void {
+		if (leftResult.variableIds.length === 0 || rightResult.variableIds.length === 0) {
+			return;
+		}
+
+		// Calculate the application Y position with clearer staggering for Church numerals
+		const baseY = y * context.gridSize + context.padding;
+
+		// Enhance the staggering - higher levels get more vertical space
+		// This creates a visually distinct "stair step" pattern for Church numerals
+		const staggerMultiplier = 1 + (level * 0.2);
+		const appY = baseY + staggerY * staggerMultiplier;
+
+		// Find the leftmost variables on each side
+		const leftVar = variables.find(v => v.id === leftResult.variableIds[0]);
+		const rightVar = variables.find(v => v.id === rightResult.variableIds[0]);
+
+		if (leftVar && rightVar) {
+			applications.push({
+				id: `app_${context.nextId++}`,
+				x1: leftVar.x,
+				x2: rightVar.x,
+				y: appY,
+				leftVarId: leftVar.id,
+				rightVarId: rightVar.id,
+				level
+			});
+
+			// Mark variables with their application level
+			leftVar.appLevel = level;
+			rightVar.appLevel = level;
+
+			// For Church numerals, adjust variable heights based on their application level
+			// This ensures that the leftmost variables (in deeper applications) have longer lines
+			if (leftVar.height < (appY - leftVar.y + context.gridSize * 0.5)) {
+				leftVar.height = appY - leftVar.y + context.gridSize * 0.5;
+			}
+
+			if (rightVar.height < (appY - rightVar.y + context.gridSize * 0.25)) {
+				rightVar.height = appY - rightVar.y + context.gridSize * 0.25;
+			}
+		}
+	}
+}
+
+// Export singleton instance
+export const trompDiagramGenerator = new TrompDiagramGenerator();

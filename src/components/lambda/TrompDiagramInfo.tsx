@@ -1,62 +1,79 @@
 "use client";
 
-import { useState } from 'react';
-
 export function TrompDiagramInfo() {
-  const [isOpen, setIsOpen] = useState(false);
+	return (
+		<div className="text-sm text-gray-700">
+			<p className="mb-4">
+				Tromp Diagrams are a graphical notation for lambda calculus expressions, invented by John Tromp.
+			</p>
 
-  return (
-    <div className="mt-4">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="text-blue-600 hover:text-blue-800 underline text-sm flex items-center"
-      >
-        {isOpen ? "Hide Diagram Information" : "What are Lambda Diagrams?"}
-      </button>
-      
-      {isOpen && (
-        <div className="mt-2 p-4 bg-gray-50 rounded-md text-sm">
-          <h3 className="font-bold text-base mb-2">Lambda Diagrams (Tromp Diagrams)</h3>
-          
-          <p className="mb-2">
-            Lambda Diagrams are a graphical notation for closed lambda terms, where:
-          </p>
-          
-          <ul className="list-disc pl-5 mb-3 space-y-1">
-            <li>
-              <span className="font-medium text-[#e07a5f]">Abstractions (lambdas)</span> are represented by horizontal lines
-            </li>
-            <li>
-              <span className="font-medium text-[#4ecdc4]">Variables</span> are shown as vertical lines emanating down from their binding lambda
-            </li>
-            <li>
-              <span className="font-medium text-[#ff9f1c]">Applications</span> are horizontal links connecting variables
-            </li>
-          </ul>
-          
-          <p className="mb-3">
-            In the standard style, applications link the leftmost variables. In the alternative style, 
-            applications link the nearest deepest variables, creating a more stylistic look.
-          </p>
-          
-          <h4 className="font-semibold mt-3 mb-2">Examples:</h4>
-          <ul className="list-disc pl-5 space-y-1">
-            <li>Identity function (λx.x): A horizontal line with a single vertical line</li>
-            <li>Church numerals (e.g., λf.λx.f(f x)): Nested horizontal lines with vertical connections</li>
-            <li>Y combinator: A complex structure with multiple connections</li>
-          </ul>
-          
-          <h4 className="font-semibold mt-3 mb-2">Beta Reduction:</h4>
-          <p>
-            When you click "Step (β-reduce)", the diagram transforms to show the substitution process.
-            This helps visualize how variables are replaced during evaluation.
-          </p>
-          
-          <div className="mt-3 text-xs text-gray-500">
-            Based on John Tromp's lambda diagrams notation.
-          </div>
-        </div>
-      )}
-    </div>
-  );
+			<h3 className="font-semibold mb-2 text-gray-800">Diagram Elements</h3>
+
+			<ul className="space-y-2 mb-4">
+				<li className="flex items-start">
+					<div className="w-4 h-0.5 bg-black mt-2.5 mr-2"></div>
+					<div>
+						<span className="font-medium">Abstractions (λx.)</span>
+						<p className="text-gray-600 text-xs mt-0.5">Represented by horizontal lines</p>
+					</div>
+				</li>
+				<li className="flex items-start">
+					<div className="w-0.5 h-4 bg-black mr-2 ml-1.5"></div>
+					<div>
+						<span className="font-medium">Variables (x)</span>
+						<p className="text-gray-600 text-xs mt-0.5">Represented by vertical lines emanating down from their binding lambda</p>
+					</div>
+				</li>
+				<li className="flex items-start">
+					<div className="w-4 h-0.5 bg-black mt-2.5 mr-2"></div>
+					<div>
+						<span className="font-medium">Applications (M N)</span>
+						<p className="text-gray-600 text-xs mt-0.5">Represented by horizontal connections between variables</p>
+					</div>
+				</li>
+			</ul>
+
+			<h3 className="font-semibold mb-2 text-gray-800">Diagram Styles</h3>
+			<div className="space-y-1 mb-4">
+				<div className="border-l-2 border-gray-300 pl-2 mb-2">
+					<p className="text-xs font-medium">Standard Style</p>
+					<p className="text-xs text-gray-600">Applications connect the leftmost variables</p>
+				</div>
+				<div className="border-l-2 border-gray-300 pl-2">
+					<p className="text-xs font-medium">Alternative Style</p>
+					<p className="text-xs text-gray-600">Applications connect the nearest deepest variables, creating a more stylistic appearance</p>
+				</div>
+			</div>
+
+			<h3 className="font-semibold mb-2 text-gray-800">Common Examples</h3>
+			<div className="space-y-1 mb-4">
+				<p className="text-xs flex items-center">
+					<span className="inline-block w-2 h-2 bg-gray-300 rounded-full mr-1.5"></span>
+					<strong>Identity (I):</strong> <code className="bg-gray-100 px-1 rounded ml-1">λx.x</code> - Appears as a simple "T" shape
+				</p>
+				<p className="text-xs flex items-center">
+					<span className="inline-block w-2 h-2 bg-gray-300 rounded-full mr-1.5"></span>
+					<strong>True (K):</strong> <code className="bg-gray-100 px-1 rounded ml-1">λx.λy.x</code> - Two horizontal lines with a vertical connection
+				</p>
+				<p className="text-xs flex items-center">
+					<span className="inline-block w-2 h-2 bg-gray-300 rounded-full mr-1.5"></span>
+					<strong>False:</strong> <code className="bg-gray-100 px-1 rounded ml-1">λx.λy.y</code> - Two horizontal lines with a vertical connection to the second lambda
+				</p>
+				<p className="text-xs flex items-center">
+					<span className="inline-block w-2 h-2 bg-gray-300 rounded-full mr-1.5"></span>
+					<strong>Church numerals:</strong> <code className="bg-gray-100 px-1 rounded ml-1">λf.λx.f(f x)</code> - Distinctive nested pattern
+				</p>
+			</div>
+
+			<h3 className="font-semibold mb-2 text-gray-800">Beta Reduction</h3>
+			<p className="text-xs mb-4">
+				When you click "Step", the diagram transforms to show how a beta reduction substitutes variables.
+				This visually demonstrates the execution of lambda expressions.
+			</p>
+
+			<p className="text-xs text-gray-500 italic border-t pt-2">
+				Learn more at <a href="https://tromp.github.io/cl/diagrams.html" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">tromp.github.io/cl/diagrams.html</a>
+			</p>
+		</div>
+	);
 }
