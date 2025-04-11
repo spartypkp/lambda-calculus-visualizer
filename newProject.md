@@ -1,5 +1,11 @@
 # Lambda Calculus Visual Calculator
 
+## Research
+Main inspiration: https://www.youtube.com/watch?v=RcVA8Nj6HEo
+Tromp diagrams: https://tromp.github.io/cl/diagrams.html
+Lambda Calculus Desmos: https://www.desmos.com/calculator/rviihyo72n
+Haskell Software: https://github.com/polux/lambda-diagrams?tab=readme-ov-file
+
 ## Project Overview
 
 The Lambda Calculus Visual Calculator is an interactive educational tool that visualizes mathematical computation through the lens of lambda calculus. Users enter familiar mathematical expressions (like `3+4` or `2*(5-1)`), and the application demonstrates how these calculations are processed using animated Tromp diagrams, revealing the underlying computational model before presenting the final result.

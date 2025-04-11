@@ -16,8 +16,18 @@ export interface BinaryOpNode {
 
 // Simple recursive descent parser for mathematical expressions
 export function parseMathExpression(expression: string): MathNode {
+	// Handle empty expressions
+	if (!expression.trim()) {
+		throw new Error("Empty expression");
+	}
+
 	let pos = 0;
 	const tokens = tokenize(expression);
+
+	// If there are no tokens, throw an error
+	if (tokens.length === 0) {
+		throw new Error("No valid tokens found");
+	}
 
 	function parseExpression(): MathNode {
 		let left = parseTerm();
@@ -25,6 +35,18 @@ export function parseMathExpression(expression: string): MathNode {
 		while (pos < tokens.length && (tokens[pos] === '+' || tokens[pos] === '-')) {
 			const operator = tokens[pos] as '+' | '-';
 			pos++;
+
+			// Handle partial expressions like "1+"
+			if (pos >= tokens.length) {
+				// For live visualization, treat missing right operand as 0
+				return {
+					type: 'binaryOp',
+					operator,
+					left,
+					right: { type: 'number', value: 0 }
+				};
+			}
+
 			const right = parseTerm();
 			left = {
 				type: 'binaryOp',
@@ -43,6 +65,19 @@ export function parseMathExpression(expression: string): MathNode {
 		while (pos < tokens.length && (tokens[pos] === '*' || tokens[pos] === '/')) {
 			const operator = tokens[pos] as '*' | '/';
 			pos++;
+
+			// Handle partial expressions like "1*"
+			if (pos >= tokens.length) {
+				// For live visualization, treat missing right operand as 1
+				// (this makes sense for * and /, since x*1=x and x/1=x)
+				return {
+					type: 'binaryOp',
+					operator,
+					left,
+					right: { type: 'number', value: 1 }
+				};
+			}
+
 			const right = parseFactor();
 			left = {
 				type: 'binaryOp',
@@ -56,16 +91,41 @@ export function parseMathExpression(expression: string): MathNode {
 	}
 
 	function parseFactor(): MathNode {
+		if (pos >= tokens.length) {
+			throw new Error("Unexpected end of expression");
+		}
+
 		if (tokens[pos] === '(') {
 			pos++; // Skip '('
+
+			// Handle case where we have "(" but no closing ")"
+			if (pos >= tokens.length) {
+				return { type: 'number', value: 0 };
+			}
+
 			const expr = parseExpression();
-			pos++; // Skip ')'
+
+			// Check if we have a closing parenthesis
+			if (pos < tokens.length && tokens[pos] === ')') {
+				pos++; // Skip ')'
+			}
+
 			return expr;
 		} else {
 			// Must be a number
-			const value = parseFloat(tokens[pos]);
-			pos++;
-			return { type: 'number', value };
+			// Handle case where token isn't a valid number
+			try {
+				const value = parseFloat(tokens[pos]);
+				if (isNaN(value)) {
+					throw new Error(`Invalid number: ${tokens[pos]}`);
+				}
+				pos++;
+				return { type: 'number', value };
+			} catch (e) {
+				// For live visualization, return 0 for invalid numbers
+				pos++;
+				return { type: 'number', value: 0 };
+			}
 		}
 	}
 

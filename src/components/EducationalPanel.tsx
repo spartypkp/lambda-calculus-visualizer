@@ -1,14 +1,17 @@
 "use client";
 
 import { LambdaNode } from "@/lib/lambdaCalculus";
-import { useState } from "react";
 
-interface EducationalPanelProps {
-	steps: LambdaNode[];
-	currentStep: number;
-	showLambdaNotation: boolean;
-	onToggleLambdaNotation: () => void;
-}
+// Remove unused import
+// import { LambdaNode } from "@/lib/lambdaCalculus";
+
+// Remove unused interface
+// interface EducationalPanelProps {
+// 	steps: LambdaNode[];
+// 	currentStep: number;
+// 	showLambdaNotation: boolean;
+// 	onToggleLambdaNotation: () => void;
+// }
 
 // Helper function to generate a simple textual representation of a lambda term
 function lambdaToString(node: LambdaNode): string {
@@ -166,91 +169,67 @@ function generateDetailedExplanation(current: LambdaNode, next: LambdaNode | und
 	return "Continuing the beta reduction process by applying substitution rules.";
 }
 
-export default function EducationalPanel({
-	steps,
-	currentStep,
-	showLambdaNotation,
-	onToggleLambdaNotation
-}: EducationalPanelProps) {
-	const [showDetails, setShowDetails] = useState<boolean>(false);
-
-	// Get the current step and next step (if it exists)
-	const currentNode = steps[currentStep];
-	const nextNode = steps[currentStep + 1];
-
-	// Generate explanation for the current step
-	const explanation = generateDetailedExplanation(currentNode, nextNode, currentStep);
-
-	// Get a simplified explanation based on step number
-	const getSimplifiedExplanation = () => {
-		if (!nextNode) {
-			return "Final result after all reductions.";
-		}
-
-		if (currentStep === 0) {
-			return "Initial lambda calculus representation.";
-		}
-
-		return "Performing beta reduction.";
-	};
-
+export default function EducationalPanel() {
 	return (
-		<div className="bg-white p-3 rounded-lg shadow-md w-full text-sm">
-			<div className="flex justify-between items-center mb-2">
-				<h3 className="font-medium text-gray-700">Step Explanation</h3>
-				<div className="flex items-center">
-					<button
-						onClick={() => setShowDetails(!showDetails)}
-						className="text-xs bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded mr-2"
-					>
-						{showDetails ? "Simplified" : "Detailed"}
-					</button>
-					<button
-						onClick={onToggleLambdaNotation}
-						className={`text-xs px-2 py-1 rounded ${showLambdaNotation
-							? "bg-blue-100 text-blue-800"
-							: "bg-gray-200 hover:bg-gray-300"
-							}`}
-					>
-						λ Notation
-					</button>
+		<div className="bg-white rounded-lg shadow-sm border border-gray-100 p-3 text-sm">
+			<h3 className="font-medium text-blue-800 mb-2 flex items-center text-base">
+				<svg className="w-4 h-4 mr-1 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+						d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+				</svg>
+				Lambda Calculus Basics
+			</h3>
+
+			<div className="space-y-2 text-gray-700">
+				<div className="bg-blue-50 p-2 rounded-md">
+					<h4 className="font-medium text-blue-800 mb-1 text-xs">Syntax</h4>
+					<ul className="list-disc pl-4 space-y-0.5 text-xs">
+						<li><span className="font-mono bg-blue-100 text-blue-800 px-1 rounded">x</span> - Variable</li>
+						<li><span className="font-mono bg-blue-100 text-blue-800 px-1 rounded">λx.M</span> - Abstraction (function)</li>
+						<li><span className="font-mono bg-blue-100 text-blue-800 px-1 rounded">(M N)</span> - Application (call)</li>
+					</ul>
 				</div>
-			</div>
 
-			<div className="text-gray-700 border-t pt-2">
-				<p>
-					{showDetails ? explanation : getSimplifiedExplanation()}
-				</p>
-			</div>
+				<div>
+					<h4 className="font-medium text-blue-800 mb-1 text-xs">Reduction Rules</h4>
+					<ul className="list-disc pl-4 space-y-0.5 text-xs">
+						<li>
+							<span className="font-medium">Alpha</span>: Renaming bound variables
+							<div className="font-mono text-xs mt-0.5 bg-gray-50 p-0.5 rounded">λx.x → λy.y</div>
+						</li>
+						<li>
+							<span className="font-medium">Beta</span>: Function application
+							<div className="font-mono text-xs mt-0.5 bg-gray-50 p-0.5 rounded">(λx.M) N → M[x := N]</div>
+						</li>
+						<li>
+							<span className="font-medium">Eta</span>: Function extensionality
+							<div className="font-mono text-xs mt-0.5 bg-gray-50 p-0.5 rounded">λx.(M x) → M</div>
+						</li>
+					</ul>
+				</div>
 
-			{showLambdaNotation && (
-				<div className="border-t pt-2 mt-2">
-					<h4 className="text-xs font-medium text-gray-700 mb-1">Lambda Notation:</h4>
-					<pre className="bg-gray-100 p-2 overflow-x-auto rounded text-xs">
-						{lambdaToString(currentNode)}
-					</pre>
-
-					{/* Show tooltip icons next to notation */}
-					<div className="mt-2 text-xs grid grid-cols-2 gap-2">
-						<p className="flex items-center">
-							<span className="bg-blue-100 text-blue-800 text-xs font-medium px-1 py-0.5 rounded mr-1">λ</span>
-							Lambda abstraction
-						</p>
-						<p className="flex items-center">
-							<span className="bg-green-100 text-green-800 text-xs font-medium px-1 py-0.5 rounded mr-1">x</span>
-							Variables
-						</p>
-						<p className="flex items-center">
-							<span className="bg-purple-100 text-purple-800 text-xs font-medium px-1 py-0.5 rounded mr-1">(f)</span>
-							Application
-						</p>
-						<p className="flex items-center">
-							<span className="bg-yellow-100 text-yellow-800 text-xs font-medium px-1 py-0.5 rounded mr-1">β</span>
-							Beta reduction
-						</p>
+				<div className="bg-purple-50 p-2 rounded-md">
+					<h4 className="font-medium text-purple-800 mb-1 text-xs">Common Combinators</h4>
+					<div className="grid grid-cols-2 gap-1 text-xs">
+						<div className="flex items-center">
+							<span className="bg-purple-200 text-purple-800 font-medium rounded-full w-5 h-5 inline-flex items-center justify-center mr-1">I</span>
+							<span><span className="font-mono bg-purple-100 text-purple-800 px-1 rounded">λx.x</span></span>
+						</div>
+						<div className="flex items-center">
+							<span className="bg-purple-200 text-purple-800 font-medium rounded-full w-5 h-5 inline-flex items-center justify-center mr-1">K</span>
+							<span><span className="font-mono bg-purple-100 text-purple-800 px-1 rounded">λx.λy.x</span></span>
+						</div>
+						<div className="flex items-center">
+							<span className="bg-purple-200 text-purple-800 font-medium rounded-full w-5 h-5 inline-flex items-center justify-center mr-1">S</span>
+							<span><span className="font-mono bg-purple-100 text-purple-800 px-1 rounded">λx.λy.λz.xz(yz)</span></span>
+						</div>
+						<div className="flex items-center">
+							<span className="bg-purple-200 text-purple-800 font-medium rounded-full w-5 h-5 inline-flex items-center justify-center mr-1">Ω</span>
+							<span><span className="font-mono bg-purple-100 text-purple-800 px-1 rounded">(λx.xx)(λx.xx)</span></span>
+						</div>
 					</div>
 				</div>
-			)}
+			</div>
 		</div>
 	);
 } 

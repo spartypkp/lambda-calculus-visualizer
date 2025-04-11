@@ -1,25 +1,60 @@
 # Lambda Calculus Visualizer
 
-An interactive educational tool for visualizing lambda calculus through mathematical expressions using animated Tromp diagrams.
+## The Inspiration
 
-![Lambda Calculus Visualizer](public/screenshot.png)
+It started at 2AM, with that familiar YouTube rabbit hole we all know too well. I stumbled upon [a mesmerizing video about lambda calculus](https://www.youtube.com/watch?v=RcVA8Nj6HEo), and the visualizations completely captivated me. There's something profoundly beautiful about seeing abstract mathematical concepts rendered visually.
 
-## Overview
+The elegant Tromp diagrams connecting these theoretical concepts with intuitive shapes and flows sparked something in my brain. I knew I had to build this myself. Four hours of flow state coding later, fueled by coffee and fascination, this project was born.
 
-The Lambda Calculus Visualizer bridges the gap between everyday arithmetic and theoretical computer science. It allows users to:
+**Warning:** Claude wrote this readme - if it reads too cringe - I take no responsibility!
 
-1. Enter familiar mathematical expressions (like `3+4` or `2*(5-1)`)
-2. Visualize how these calculations are processed using lambda calculus
-3. Step through the computation process with animated Tromp diagrams
-4. Learn about the underlying computational model
+## What is Lambda Calculus?
 
-## Features
+Lambda calculus is a formal system in mathematical logic and computer science, developed by Alonzo Church in the 1930s. It's a universal model of computation that forms the theoretical foundation of functional programming.
 
-- **Calculator Interface**: Intuitive calculator with support for basic arithmetic operations
-- **Tromp Diagram Visualization**: Interactive visual representation of lambda calculus expressions
-- **Step-by-Step Animation**: Control the animation pace and navigate through reduction steps
-- **Educational Content**: Explanations of each reduction step and lambda calculus concepts
-- **Responsive Design**: Works on desktop, tablet, and mobile devices
+At its core, lambda calculus consists of:
+- **Variables**: Simple symbolic names
+- **Abstractions**: Functions that map variables to expressions (λx.M)
+- **Applications**: Applying a function to an argument (M N)
+
+Despite this simplicity, lambda calculus is Turing complete and can express any computable function.
+
+## About This Project
+
+The Lambda Calculus Visualizer transforms mathematical expressions into their lambda calculus representations and visualizes them using interactive Tromp diagrams. This bridge between familiar arithmetic and theoretical computer science makes abstract concepts tangible.
+
+### Key Features
+
+- **Interactive Diagrams**: Visualize lambda expressions as Tromp diagrams with different node types:
+  - Diamonds (◇) for abstractions (λ)
+  - Rectangles (□) for applications (@)
+  - Circles (○) for variables
+  
+- **Animated Evaluation**: Watch the step-by-step beta reduction process unfold through smooth transitions and highlighting
+
+- **Navigation Controls**:
+  - Zoom and pan for complex expressions
+  - Fit-to-view functionality
+  - Focus on active reduction steps
+  - Reset view option
+
+- **Visual Enhancements**:
+  - Color-coding for different node types
+  - Highlighting for active reduction sites
+  - Animation for emphasis
+  - Minimap for orientation with complex diagrams
+
+- **Educational Components**:
+  - Visual distinction between expression components
+  - Clear representation of computational steps
+  - Intuitive interface for exploring lambda calculus
+
+## Technical Stack
+
+- Next.js with TypeScript
+- React for component structure
+- D3.js for visualization
+- Tailwind CSS for styling
 
 ## Getting Started
 
@@ -130,3 +165,20 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - Alonzo Church for developing lambda calculus
 - John Tromp for the diagram representation approach
 - All contributors and users of this educational tool
+
+## Future Enhancements
+
+- Support for more complex operations
+- Custom function definitions
+- Comparison of different evaluation strategies
+- Additional visualization styles
+
+## Resources
+
+- [Tromp Diagrams](https://tromp.github.io/cl/diagrams.html)
+- [Lambda Calculus Desmos](https://www.desmos.com/calculator/rviihyo72n)
+- [Lambda Diagrams GitHub](https://github.com/polux/lambda-diagrams)
+
+---
+
+*Created with passion in a 4-hour coding sprint, because sometimes, late-night inspiration leads to the most interesting projects.*
